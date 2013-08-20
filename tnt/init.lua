@@ -1,16 +1,15 @@
-local destroy = function(pos)
-	local nodename = minetest.env:get_node(pos).name
-	if nodename ~= "air" then
-		minetest.env:remove_node(pos)
-		nodeupdate(pos)
-		if minetest.registered_nodes[nodename].groups.flammable ~= nil then
-			minetest.env:set_node(pos, {name="fire:basic_flame"})
-			return
-		end
-		if math.random(1,3) == 3 then
-			return
-		end
-		local drop = minetest.get_node_drops(nodename, "")
+local tnt_range = 2
+local tnt_preserve_items = true
+local tnt_drop_items = true
+local tnt_seed = 15
+
+local function get_tnt_random(pos)
+	return PseudoRandom(math.abs(pos.x+pos.y*3+pos.z*5)+tnt_seed)
+end
+
+local function drop_item(pos, nodename)
+	local drop = minetest.get_node_drops(nodename, "")
+	if tnt_drop_items then
 		for _,item in ipairs(drop) do
 			if type(item) == "string" then
 				local obj = minetest.env:add_item(pos, item)
@@ -19,7 +18,7 @@ local destroy = function(pos)
 				end
 				obj:get_luaentity().collect = true
 				obj:setacceleration({x=0, y=-10, z=0})
-				obj:setvelocity({x=math.random(0,6)-3, y=10, z=math.random(0,6)-3})
+				obj:setvelocity({x=pr:next(0,6)-3, y=10, z=pr:next(0,6)-3})
 			else
 				for i=1,item:get_count() do
 					local obj = minetest.env:add_item(pos, item:get_name())
@@ -28,11 +27,30 @@ local destroy = function(pos)
 					end
 					obj:get_luaentity().collect = true
 					obj:setacceleration({x=0, y=-10, z=0})
-					obj:setvelocity({x=math.random(0,6)-3, y=10, z=math.random(0,6)-3})
+					obj:setvelocity({x=pr:next(0,6)-3, y=10, z=pr:next(0,6)-3})
 				end
 			end
 		end
 	end
+end
+
+local destroy = function(pos)
+	local nodename = minetest.env:get_node(pos).name
+	local p_pos = area:index(pos.x, pos.y, pos.z)
+	if nodes[p_pos] ~= tnt_c_air then
+--		minetest.env:remove_node(pos)
+--		nodeupdate(pos)
+		if minetest.registered_nodes[nodename].groups.flammable ~= nil then
+			nodes[p_pos] = tnt_c_fire
+			return
+		end
+		nodes[p_pos] = tnt_c_air
+		if pr:next(1,3) == 3
+		or not tnt_preserve_items then
+			return
+		end
+	end
+	drop_item(pos, nodename)
 end
 
 boom = function(pos, time)
@@ -40,11 +58,21 @@ boom = function(pos, time)
 		if minetest.env:get_node(pos).name ~= "tnt:tnt_burning" then
 			return
 		end
-		minetest.sound_play("tnt_explode", {pos=pos, gain=1.5, max_hear_distance=2*64})
-		minetest.env:set_node(pos, {name="tnt:boom"})
-		minetest.after(0.5, function(pos)
-			minetest.env:remove_node(pos)
-		end, {x=pos.x, y=pos.y, z=pos.z})
+
+		local t1 = os.clock()
+		pr = get_tnt_random(pos)
+		minetest.sound_play("tnt_explode", {pos=pos, gain=1.5, max_hear_distance=tnt_range*64})
+
+		local manip = minetest.get_voxel_manip()
+		local width = tnt_range
+		local emerged_pos1, emerged_pos2 = manip:read_from_map({x=pos.x-width, y=pos.y-width, z=pos.z-width},
+			{x=pos.x+width, y=pos.y+width, z=pos.z+width})
+		area = VoxelArea:new{MinEdge=emerged_pos1, MaxEdge=emerged_pos2}
+		nodes = manip:get_data()
+
+		local p_pos = area:index(pos.x, pos.y, pos.z)
+		nodes[p_pos] = tnt_c_boom
+		--minetest.env:set_node(pos, {name="tnt:boom"})
 		
 		local objects = minetest.env:get_objects_inside_radius(pos, 7)
 		for _,obj in ipairs(objects) do
@@ -60,32 +88,33 @@ boom = function(pos, time)
 			end
 		end
 		
-		for dx=-2,2 do
-			for dz=-2,2 do
-				for dy=2,-2,-1 do
-					pos.x = pos.x+dx
-					pos.y = pos.y+dy
-					pos.z = pos.z+dz
+		for dx=-tnt_range,tnt_range do
+			for dz=-tnt_range,tnt_range do
+				for dy=tnt_range,-tnt_range,-1 do
+					local p = {x=pos.x+dx, y=pos.y+dy, z=pos.z+dz}
 					
-					local node =  minetest.env:get_node(pos)
-					if node.name == "tnt:tnt" or node.name == "tnt:tnt_burning" then
-						minetest.env:set_node(pos, {name="tnt:tnt_burning"})
-						boom({x=pos.x, y=pos.y, z=pos.z}, 0)
-					elseif node.name == "fire:basic_flame" or string.find(node.name, "default:water_") or string.find(node.name, "default:lava_") or node.name == "tnt:boom" then
-						
-					else
-						if math.abs(dx)<2 and math.abs(dy)<2 and math.abs(dz)<2 then
-							destroy(pos)
+					local p_node = area:index(p.x, p.y, p.z)
+					local d_p_node = nodes[p_node]
+					local node =  minetest.env:get_node(p)
+					--if node.name == "tnt:tnt" or node.name == "tnt:tnt_burning" then
+					if d_p_node == tnt_c_tnt
+					or d_p_node == tnt_c_tnt_burning then
+						nodes[p_node] = tnt_c_tnt_burning
+						--minetest.env:set_node(pos, {name="tnt:tnt_burning"})
+						boom({x=p.x, y=p.y, z=p.z}, 0)
+					elseif not ( d_p_node == tnt_c_fire
+					or string.find(node.name, "default:water_")
+					or string.find(node.name, "default:lava_")
+					or d_p_node == tnt_c_boom ) then
+						if math.abs(dx)<tnt_range and math.abs(dy)<tnt_range and math.abs(dz)<tnt_range then
+							destroy(p)
 						else
-							if math.random(1,5) <= 4 then
-								destroy(pos)
+							if pr:next(1,5) <= 4 then
+								destroy(p)
 							end
 						end
 					end
 					
-					pos.x = pos.x-dx
-					pos.y = pos.y-dy
-					pos.z = pos.z-dz
 				end
 			end
 		end
@@ -105,6 +134,16 @@ boom = function(pos, time)
 			15, --maxsize
 			false, --collisiondetection
 			"tnt_smoke.png" --texture
+		)
+		manip:set_data(nodes)
+		manip:write_to_map()
+		print(string.format("[tnt] exploded in: %.2fs", os.clock() - t1))
+		local t1 = os.clock()
+		manip:update_map()
+		print(string.format("[tnt] map updated after: %.2fs", os.clock() - t1))
+		minetest.after(0.5, function(pos)
+				minetest.env:remove_node(pos)
+			end, {x=pos.x, y=pos.y, z=pos.z}
 		)
 	end, pos)
 end
@@ -233,6 +272,13 @@ minetest.register_node("tnt:gunpowder_burning", {
 	groups = {dig_immediate=2,attached_node=1},
 	sounds = default.node_sound_leaves_defaults(),
 })
+
+tnt_c_boom = minetest.get_content_id("tnt:boom")
+tnt_c_tnt = minetest.get_content_id("tnt:tnt")
+tnt_c_tnt_burning = minetest.get_content_id("tnt:tnt_burning")
+tnt_c_air = minetest.get_content_id("air")
+tnt_c_fire = minetest.get_content_id("fire:basic_flame")
+
 
 minetest.register_abm({
 	nodenames = {"tnt:tnt", "tnt:gunpowder"},
