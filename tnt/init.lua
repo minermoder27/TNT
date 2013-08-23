@@ -1,7 +1,9 @@
 local tnt_range = 2
-local tnt_preserve_items = true
-local tnt_drop_items = true
+local tnt_preserve_items = false
+local tnt_drop_items = false
 local tnt_seed = 15
+
+local tnt_side = "default_tnt_side.png^tnt_shadows.png"
 
 local function get_tnt_random(pos)
 	return PseudoRandom(math.abs(pos.x+pos.y*3+pos.z*5)+tnt_seed)
@@ -96,12 +98,12 @@ boom = function(pos, time)
 					local p_node = area:index(p.x, p.y, p.z)
 					local d_p_node = nodes[p_node]
 					local node =  minetest.env:get_node(p)
-					--if node.name == "tnt:tnt" or node.name == "tnt:tnt_burning" then
 					if d_p_node == tnt_c_tnt
 					or d_p_node == tnt_c_tnt_burning then
 						nodes[p_node] = tnt_c_tnt_burning
-						--minetest.env:set_node(pos, {name="tnt:tnt_burning"})
+--						minetest.after(1, function(p)
 						boom({x=p.x, y=p.y, z=p.z}, 0)
+--						end, p)
 					elseif not ( d_p_node == tnt_c_fire
 					or string.find(node.name, "default:water_")
 					or string.find(node.name, "default:lava_")
@@ -150,7 +152,7 @@ end
 
 minetest.register_node("tnt:tnt", {
 	description = "TNT",
-	tiles = {"tnt_top.png", "tnt_bottom.png", "tnt_side.png"},
+	tiles = {"default_tnt_top.png", "default_tnt_bottom.png", tnt_side},
 	groups = {dig_immediate=2, mesecon=2},
 	sounds = default.node_sound_wood_defaults(),
 	
@@ -173,7 +175,7 @@ minetest.register_node("tnt:tnt", {
 })
 
 minetest.register_node("tnt:tnt_burning", {
-	tiles = {{name="tnt_top_burning_animated.png", animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1}}, "tnt_bottom.png", "tnt_side.png"},
+	tiles = {{name="tnt_top_burning_animated.png", animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1}}, "default_tnt_bottom.png", tnt_side},--"default_tnt_top.png^"
 	light_source = 5,
 	drop = "",
 	sounds = default.node_sound_wood_defaults(),
