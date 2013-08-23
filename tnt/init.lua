@@ -101,9 +101,7 @@ boom = function(pos, time)
 					if d_p_node == tnt_c_tnt
 					or d_p_node == tnt_c_tnt_burning then
 						nodes[p_node] = tnt_c_tnt_burning
---						minetest.after(1, function(p)
 						boom({x=p.x, y=p.y, z=p.z}, 0)
---						end, p)
 					elseif not ( d_p_node == tnt_c_fire
 					or string.find(node.name, "default:water_")
 					or string.find(node.name, "default:lava_")
