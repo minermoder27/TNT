@@ -55,7 +55,7 @@ local destroy = function(pos)
 	drop_item(pos, nodename)
 end
 
-boom = function(pos, time)
+function boom(pos, time)
 	minetest.after(time, function(pos)
 		if minetest.env:get_node(pos).name ~= "tnt:tnt_burning" then
 			return
@@ -172,8 +172,23 @@ minetest.register_node("tnt:tnt", {
 	},
 })
 
+local tnt_frame_count = 4
+local tnt_frame_size = 16
+
+local l = tnt_frame_count
+local px = 0
+local combine_textures = ":0,"..px.."=default_tnt_top.png"
+while l ~= 0 do
+	combine_textures = combine_textures..":0,"..px.."=default_tnt_top.png"
+	px = px+tnt_frame_size
+	l = l-1
+end
+
+local animated_tnt_texture = "tnt_top_burning_animated.png^[combine:16x64:"..combine_textures.."^tnt_top_burning_animated.png"
+
 minetest.register_node("tnt:tnt_burning", {
-	tiles = {{name="tnt_top_burning_animated.png", animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1}}, "default_tnt_bottom.png", tnt_side},--"default_tnt_top.png^"
+	tiles = {{name=animated_tnt_texture, animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1}},
+	"default_tnt_bottom.png", tnt_side},
 	light_source = 5,
 	drop = "",
 	sounds = default.node_sound_wood_defaults(),
