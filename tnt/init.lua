@@ -36,7 +36,7 @@ local function drop_item(pos, nodename)
 	end
 end
 
-local destroy = function(pos)
+local function destroy(pos)
 	local nodename = minetest.env:get_node(pos).name
 	local p_pos = area:index(pos.x, pos.y, pos.z)
 	if nodes[p_pos] ~= tnt_c_air then
