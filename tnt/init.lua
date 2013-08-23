@@ -1,5 +1,5 @@
 local tnt_range = 2
-local tnt_preserve_items = false
+local tnt_preserve_items = true
 local tnt_drop_items = false
 local tnt_seed = 15
 
@@ -9,10 +9,23 @@ local function get_tnt_random(pos)
 	return PseudoRandom(math.abs(pos.x+pos.y*3+pos.z*5)+tnt_seed)
 end
 
-local function drop_item(pos, nodename)
-	local drop = minetest.get_node_drops(nodename, "")
-	if tnt_drop_items then
-		for _,item in ipairs(drop) do
+local function drop_item(pos, nodename, player)
+	local drop = minetest.get_node_drops(nodename)
+	local drop_items = tnt_drop_items
+	if not player then
+		drop_items = true
+	else
+		inv = player:get_inventory()
+		if not inv then
+			drop_items = true
+		end
+	end
+
+	for _,item in ipairs(drop) do
+		if not drop_items
+		and inv:room_for_item("main", item) then
+			inv:add_item("main", item)
+		else
 			if type(item) == "string" then
 				local obj = minetest.env:add_item(pos, item)
 				if obj == nil then
@@ -36,7 +49,7 @@ local function drop_item(pos, nodename)
 	end
 end
 
-local function destroy(pos)
+local function destroy(pos, player)
 	local nodename = minetest.env:get_node(pos).name
 	local p_pos = area:index(pos.x, pos.y, pos.z)
 	if nodes[p_pos] ~= tnt_c_air then
@@ -52,10 +65,10 @@ local function destroy(pos)
 			return
 		end
 	end
-	drop_item(pos, nodename)
+	drop_item(pos, nodename, player)
 end
 
-function boom(pos, time)
+function boom(pos, time, player)
 	minetest.after(time, function(pos)
 		if minetest.env:get_node(pos).name ~= "tnt:tnt_burning" then
 			return
@@ -101,16 +114,16 @@ function boom(pos, time)
 					if d_p_node == tnt_c_tnt
 					or d_p_node == tnt_c_tnt_burning then
 						nodes[p_node] = tnt_c_tnt_burning
-						boom({x=p.x, y=p.y, z=p.z}, 0)
+						boom({x=p.x, y=p.y, z=p.z}, 0, player)
 					elseif not ( d_p_node == tnt_c_fire
 					or string.find(node.name, "default:water_")
 					or string.find(node.name, "default:lava_")
 					or d_p_node == tnt_c_boom ) then
 						if math.abs(dx)<tnt_range and math.abs(dy)<tnt_range and math.abs(dz)<tnt_range then
-							destroy(p)
+							destroy(p, player)
 						else
 							if pr:next(1,5) <= 4 then
-								destroy(p)
+								destroy(p, player)
 							end
 						end
 					end
@@ -158,7 +171,7 @@ minetest.register_node("tnt:tnt", {
 		if puncher:get_wielded_item():get_name() == "default:torch" then
 			minetest.sound_play("tnt_ignite", {pos=pos})
 			minetest.env:set_node(pos, {name="tnt:tnt_burning"})
-			boom(pos, 4)
+			boom(pos, 4, puncher)
 		end
 	end,
 	
