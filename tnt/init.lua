@@ -209,14 +209,15 @@ minetest.register_node("tnt:tnt_burning", {
 
 --minetest.register_node("tnt:boom", {drop="", groups={dig_immediate=3}})
 
-function burn(pos)
-	if minetest.get_node(pos).name == "tnt:tnt" then
+function burn(pos, player)
+	local nodename = minetest.get_node(pos).name
+	if nodename == "tnt:tnt" then
 		minetest.sound_play("tnt_ignite", {pos=pos})
 		minetest.set_node(pos, {name="tnt:tnt_burning"})
-		boom(pos, 1)
+		boom(pos, 1, player)
 		return
 	end
-	if minetest.get_node(pos).name ~= "tnt:gunpowder" then
+	if nodename ~= "tnt:gunpowder" then
 		return
 	end
 	minetest.sound_play("tnt_gunpowder_burning", {pos=pos, gain=2})
@@ -238,10 +239,10 @@ function burn(pos)
 					
 					if not (math.abs(dx) == 1 and math.abs(dz) == 1) then
 						if dy == 0 then
-							burn({x=pos.x, y=pos.y, z=pos.z})
+							burn({x=pos.x, y=pos.y, z=pos.z}, player)
 						else
 							if math.abs(dx) == 1 or math.abs(dz) == 1 then
-								burn({x=pos.x, y=pos.y, z=pos.z})
+								burn({x=pos.x, y=pos.y, z=pos.z}, player)
 							end
 						end
 					end
@@ -273,7 +274,7 @@ minetest.register_node("tnt:gunpowder", {
 	
 	on_punch = function(pos, node, puncher)
 		if puncher:get_wielded_item():get_name() == "default:torch" then
-			burn(pos)
+			burn(pos, puncher)
 		end
 	end,
 })
