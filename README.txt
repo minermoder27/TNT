@@ -16,13 +16,18 @@ http://wiki.minetest.com/wiki/Installing_Mods
 
 How to use the mod:
 Craft gunpowder by placing coal and gravel in the crafting area. The
-gunpowder can be used to craft TNT or as fuze for TNT. To craft TNT
-surround gunpowder with 4 wood in a + shape.
+gunpowder can be used to craft TNT or as fuze for TNT.
+
+To craft TNT1 place gunpowder in a + shape.
+To craft TNT2 surround TNT1 with 4 gunpowder in a + shape.
+To craft TNT3 surround TNT2 with 4 gunpowder in a + shape.
+To craft TNT4 surround TNT3 with 4 gunpowder in a + shape.
+Right up to TNT10.
+
 There are different ways to blow up TNT:
 1. Hit it with a torch.
 2. Hit a gunpowder fuze that leads to a TNT block with a torch.
 3. Activate it with mesecons (fastest way)
-Be aware of the damage radius of 7 blocks!
 
 License:
 WTFPL (see below)
