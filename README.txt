@@ -1,8 +1,9 @@
 === TNT-MOD for MINETEST-C55 ===
-by PilzAdam
+by minermoder27
+derived from PilzAdam's TNT mod and HybridDog's TNT mod.
 
 Introduction:
-This mod adds TNT to Minetest. TNT is a tool to help the player
+This mod adds 10 types TNT to Minetest. TNT is a tool to help the player
 in mining.
 
 How to install:
