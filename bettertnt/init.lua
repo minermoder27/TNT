@@ -36,6 +36,15 @@ local function drop_item(pos, nodename, player)
             end
 end
 
+local function is_tnt(id)
+	for i=1, #tnt_c_tnt do
+		if tnt_c_tnt[i]==id then
+			return true
+		end
+	end
+	return false
+end
+
 local function destroy(pos, player)
         local nodename = minetest.get_node(pos).name
         local p_pos = area:index(pos.x, pos.y, pos.z)
@@ -45,21 +54,10 @@ local function destroy(pos, player)
                         return
                 end
                 nodes[p_pos] = tnt_c_air
-                if pr:next(1,3) == 3
-                or not tnt_preserve_items then
-                        return
-                end
         end
-        drop_item(pos, nodename, player)
-end
-
-local function is_tnt(id)
-	for i=1, #tnt_c_tnt do
-		if tnt_c_tnt[i]==id then
-			return true
-		end
-	end
-	return false
+        if tnt_tables[nodename]==nil then
+        	drop_item(pos, nodename, player)
+        end
 end
 
 local function combine_texture(texture_size, frame_count, texture, ani_texture)
@@ -128,8 +126,8 @@ for name,data in pairs(tnt_tables) do
 		}
 	})
 	
-	tnt_c_tnt[#tnt_c_tnt] = minetest.get_content_id(name)
-	tnt_c_tnt_burning[#tnt_c_tnt_burning] = minetest.get_content_id(name.."_burning")
+	tnt_c_tnt[#tnt_c_tnt + 1] = minetest.get_content_id(name)
+	tnt_c_tnt_burning[#tnt_c_tnt_burning + 1] = minetest.get_content_id(name.."_burning")
 
 end
 
@@ -155,6 +153,8 @@ function boom_id(pos, time, player, id)
 		local t1 = os.clock()
 		pr = get_tnt_random(pos)
 		minetest.sound_play("bettertnt_explode", {pos=pos, gain=1.5, max_hear_distance=tnt_range*64})
+		
+		--minetest.remove_node(pos)
 		
 		local manip = minetest.get_voxel_manip()
 		local width = tnt_range
@@ -201,7 +201,7 @@ function boom_id(pos, time, player, id)
 						if math.abs(dx)<tnt_range and math.abs(dy)<tnt_range and math.abs(dz)<tnt_range then
 							destroy(p, player)
 						elseif pr:next(1,5) <= 4 then
-								destroy(p, player)
+							destroy(p, player)
 						end
 					end
 					
