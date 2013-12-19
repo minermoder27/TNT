@@ -35,9 +35,9 @@ tnt.force = {
 	["default:stone_with_copper"] = 4,
 	["default:stone_with_gold"] = 4,
 	
-	["default:mese_in_stone"] = 6,
+	["default:stone_with_mese"] = 6,
 	["default:mese"] = 10,
-	["default:diamonds_in_stone"] = 6,
+	["default:stone_with_diamond"] = 6,
 	
 	["default:torch"] = 1,
 	
