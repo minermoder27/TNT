@@ -39,7 +39,7 @@ tnt.force = {
 	["default:mese"] = 10,
 	["default:diamonds_in_stone"] = 6,
 	
-	["default:torch"] = 6,
+	["default:torch"] = 1,
 	
 	
 	["default:steelblock"] = 30,
