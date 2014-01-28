@@ -7,8 +7,7 @@ local tnt_tables = {["bettertnt:tnt1"] = {r=1},
 					["bettertnt:tnt7"] = {r=12},
 					["bettertnt:tnt8"] = {r=14},
 					["bettertnt:tnt9"] = {r=16},
-					["bettertnt:tnt10"] = {r=18},
-					["tnt:tnt"] = {r=2}}
+					["bettertnt:tnt10"] = {r=18}}
 
 tnt = {}
 tnt.force = {
@@ -188,6 +187,7 @@ end
 function boom_id(pos, time, player, id)
 	minetest.after(time, function(pos)
 		
+		print(id);
 		local tnt_range = tnt_tables[id].r * 6
 	
 		local t1 = os.clock()
@@ -440,7 +440,7 @@ minetest.register_abm({
 minetest.register_craft({
         output = "bettertnt:gunpowder",
         type = "shapeless",
-        recipe = {"default:coal_lump", "default:gravel", "default:coal_lump"}
+        recipe = {"default:coal_lump", "default:gravel"}
 })
 
 
