@@ -7,7 +7,8 @@ local tnt_tables = {["bettertnt:tnt1"] = {r=1},
 					["bettertnt:tnt7"] = {r=12},
 					["bettertnt:tnt8"] = {r=14},
 					["bettertnt:tnt9"] = {r=16},
-					["bettertnt:tnt10"] = {r=18},}
+					["bettertnt:tnt10"] = {r=18},
+					["tnt:tnt"] = {r=2}}
 
 tnt = {}
 tnt.force = {
