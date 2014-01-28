@@ -428,7 +428,7 @@ minetest.register_abm({
         interval = 2,
         chance = 10,
         action = function(pos, node)
-                if node.name == "tnt:tnt1" then
+                if node.name == "bettertnt:tnt1" then
                         boom({x=pos.x, y=pos.y, z=pos.z}, 0)
                 else
                         burn(pos)
@@ -437,9 +437,9 @@ minetest.register_abm({
 })
 
 minetest.register_craft({
-        output = "tnt:gunpowder",
+        output = "bettertnt:gunpowder",
         type = "shapeless",
-        recipe = {"default:coal_lump", "default:gravel"}
+        recipe = {"default:coal_lump", "default:gravel", "default:coal_lump"}
 })
 
 
