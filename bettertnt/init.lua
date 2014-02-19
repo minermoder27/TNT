@@ -10,45 +10,8 @@ local tnt_tables = {["bettertnt:tnt1"] = {r=1},
 					["bettertnt:tnt10"] = {r=18}}
 
 tnt = {}
-tnt.force = {
-	["default:brick"] = 4,
-	["default:cobble"] = 4,
-	["default:stonebrick"] = 4,
-	["default:desert_stonebrick"] = 4,
-	["default:gravel"] = 1,
-	["default:sand"] = 1,
-	["default:desert_sand"] = 1,
-	["default:clay"] = 1,
-	["default:dirt"] = 1,
-	["default:dirt_with_grass"] = 1,
-	["default:dirt_with_grass_footsteps"] = 1,
-	["default:dirt_with_snow"] = 1,
-	["default:wood"] = 2,
-	["default:tree"] = 3,
-	["default:stone"] = 3,
-	["default:sandstone"] = 3,
-	["default:sandstonebrick"] = 3,
-	["default:desert_stone"] = 3,
-	
-	["default:stone_with_coal"] = 4,
-	["default:stone_with_iron"] = 4,
-	["default:stone_with_copper"] = 4,
-	["default:stone_with_gold"] = 4,
-	
-	["default:stone_with_mese"] = 6,
-	["default:mese"] = 10,
-	["default:stone_with_diamond"] = 6,
-	
-	["default:torch"] = 1,
-	
-	
-	["default:steelblock"] = 30,
-	["default:obsidian"] = 30,
-}
-tnt.accl = {
-	["default:steelblock"] = true,
-	["default:obsidian"] = true,
-}
+
+dofile(minetest.get_modpath("bettertnt").."/blasts.lua")
 
 
 local function drop_item(pos, nodename, player, count)
