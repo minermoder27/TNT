@@ -1,5 +1,5 @@
-local tnt_tables = {["bettertnt:tnt1"] = {r=1},
-					["bettertnt:tnt2"] = {r=6},
+local tnt_tables = {["bettertnt:tnt1"] = {r=6},
+					["bettertnt:tnt2"] = {r=1},
 					["bettertnt:tnt3"] = {r=2},
 					["bettertnt:tnt4"] = {r=4},
 					["bettertnt:tnt5"] = {r=6},
@@ -226,7 +226,7 @@ function boom_id(pos, time, player, id)
 		local ents = {}
 		local storedPoses = {}
 		
-		if id~="bettertnt:tnt2" then
+		if id~="bettertnt:tnt1" then
 			for dx=-tnt_range,tnt_range do
 				for dz=-tnt_range,tnt_range do
 					for dy=-tnt_range,tnt_range do
