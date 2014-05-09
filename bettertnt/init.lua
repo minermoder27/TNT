@@ -1,13 +1,14 @@
 local tnt_tables = {["bettertnt:tnt1"] = {r=1},
-					["bettertnt:tnt2"] = {r=2},
-					["bettertnt:tnt3"] = {r=4},
-					["bettertnt:tnt4"] = {r=6},
-					["bettertnt:tnt5"] = {r=8},
-					["bettertnt:tnt6"] = {r=10},
-					["bettertnt:tnt7"] = {r=12},
-					["bettertnt:tnt8"] = {r=14},
-					["bettertnt:tnt9"] = {r=16},
-					["bettertnt:tnt10"] = {r=18}}
+					["bettertnt:tnt2"] = {r=6},
+					["bettertnt:tnt3"] = {r=2},
+					["bettertnt:tnt4"] = {r=4},
+					["bettertnt:tnt5"] = {r=6},
+					["bettertnt:tnt6"] = {r=8},
+					["bettertnt:tnt7"] = {r=10},
+					["bettertnt:tnt8"] = {r=12},
+					["bettertnt:tnt9"] = {r=14},
+					["bettertnt:tnt10"] = {r=16},
+					["bettertnt:tnt11"] = {r=18}}
 
 tnt = {}
 tnt.force = {
@@ -187,7 +188,6 @@ end
 function boom_id(pos, time, player, id)
 	minetest.after(time, function(pos)
 		
-		print(id);
 		local tnt_range = tnt_tables[id].r * 6
 	
 		local t1 = os.clock()
@@ -214,7 +214,8 @@ function boom_id(pos, time, player, id)
 				local obj_p = obj:getpos()
 				local vec = {x=obj_p.x-pos.x, y=obj_p.y-pos.y, z=obj_p.z-pos.z}
 				local dist = (vec.x^2+vec.y^2+vec.z^2)^0.5
-				local damage = (80*0.5^(tnt_range - dist))/2
+				local damage = 0
+				if dist < tnt_range/3.0 then damage = tnt_range end
 				obj:punch(obj, 1.0, {
 					full_punch_interval=1.0,
 					damage_groups={fleshy=damage},
@@ -225,84 +226,86 @@ function boom_id(pos, time, player, id)
 		local ents = {}
 		local storedPoses = {}
 		
-		for dx=-tnt_range,tnt_range do
-			for dz=-tnt_range,tnt_range do
-				for dy=-tnt_range,tnt_range do
-					--local p = {x=pos.x+dx, y=pos.y+dy, z=pos.z+dz}
-					----------------------------------------
-					local dist = (dx^2) + (dy^2) + (dz^2)
-					dist = dist^(1/2.0)
-					if dist < tnt_range and dist + 1 >= tnt_range and dist~=0 then
-						local dir = {x=dx, y=dy, z=dz}
-						--local totalnum = math.abs(dir.x)+math.abs(dir.y)+math.abs(dir.z)
-						--dir = vector.normalize(dir)--vector.divide(dir, vector.new(totalnum, totalnum, totalnum))
-						dir.x = dir.x / dist
-						dir.y = dir.y / dist
-						dir.z = dir.z / dist
-						--local p = {x=pos.x, y=pos.y, z=pos.z} -- {x=0,y=0,z=0}--
-						local blast = tnt_range / 3
-						for i=1, dist do
---							i = i - 0.5
-							local pp = {x=dir.x*i, y=dir.y*i, z=dir.z*i}
-							local p  = vector.add(pp, pos)
-							p.x = math.floor(p.x)
-							p.y = math.floor(p.y)
-							p.z = math.floor(p.z)
-							for i=1, #storedPoses do
-								if p.x==storedPoses[i].x and p.y==storedPoses[i].y and p.z==storedPoses[i].z then
-									--print("p: "..dump(p) .. " storedPoses: "..dump(storedPoses[i]))
-									p = nil
+		if id~="bettertnt:tnt2" then
+			for dx=-tnt_range,tnt_range do
+				for dz=-tnt_range,tnt_range do
+					for dy=-tnt_range,tnt_range do
+						--local p = {x=pos.x+dx, y=pos.y+dy, z=pos.z+dz}
+						----------------------------------------
+						local dist = (dx^2) + (dy^2) + (dz^2)
+						dist = dist^(1/2.0)
+						if dist < tnt_range and dist + 1 >= tnt_range and dist~=0 then
+							local dir = {x=dx, y=dy, z=dz}
+							--local totalnum = math.abs(dir.x)+math.abs(dir.y)+math.abs(dir.z)
+							--dir = vector.normalize(dir)--vector.divide(dir, vector.new(totalnum, totalnum, totalnum))
+							dir.x = dir.x / dist
+							dir.y = dir.y / dist
+							dir.z = dir.z / dist
+							--local p = {x=pos.x, y=pos.y, z=pos.z} -- {x=0,y=0,z=0}--
+							local blast = tnt_range / 3
+							for i=1, dist do
+	--							i = i - 0.5
+								local pp = {x=dir.x*i, y=dir.y*i, z=dir.z*i}
+								local p  = vector.add(pp, pos)
+								p.x = math.floor(p.x)
+								p.y = math.floor(p.y)
+								p.z = math.floor(p.z)
+								for i=1, #storedPoses do
+									if p.x==storedPoses[i].x and p.y==storedPoses[i].y and p.z==storedPoses[i].z then
+										--print("p: "..dump(p) .. " storedPoses: "..dump(storedPoses[i]))
+										p = nil
+										break
+									end
+								end
+								
+								if p==nil then break end
+								--local p = {x=pos.x+dx, y=pos.y+dy, z=pos.z+dz}
+								--vector.add(p, dir)
+								----------------------------------------
+	--							local p_node = area:index(p.x, p.y, p.z)
+	--							local d_p_node = nodes[p_node]
+								local node = minetest.get_node(p)
+								-------------------------------------------------------------
+								blast = blast - (tnt.force[node.name] or 3)
+								if tnt.accl[node.name]==true then
+									storedPoses[#storedPoses + 1] = {x=p.x, y=p.y, z=p.z}
+									local stored = minetest.get_meta(p):get_int("blast") or 0
+									blast = blast + stored
+								end
+								if blast <= 0 then
+									if tnt.accl[node.name]==true then
+										minetest.get_meta(p):set_int("blast", tnt.force[node.name] + blast)
+									end
 									break
 								end
-							end
-							
-							if p==nil then break end
-							--local p = {x=pos.x+dx, y=pos.y+dy, z=pos.z+dz}
-							--vector.add(p, dir)
-							----------------------------------------
---							local p_node = area:index(p.x, p.y, p.z)
---							local d_p_node = nodes[p_node]
-							local node = minetest.get_node(p)
-							-------------------------------------------------------------
-							blast = blast - (tnt.force[node.name] or 3)
-							if tnt.accl[node.name]==true then
-								storedPoses[#storedPoses + 1] = {x=p.x, y=p.y, z=p.z}
-								local stored = minetest.get_meta(p):get_int("blast") or 0
-								blast = blast + stored
-							end
-							if blast <= 0 then
-								if tnt.accl[node.name]==true then
-									minetest.get_meta(p):set_int("blast", tnt.force[node.name] + blast)
+								-------------------------------------------------------------
+			--					if d_p_node == tnt_c_tnt
+			--							or d_p_node == tnt_c_tnt_burning then
+								if is_tnt(node.name)==true then
+									--nodes[p_node] = tnt_c_tnt
+									minetest.remove_node(p)
+									boom_id(p, 0.5, player, node.name) -- was {x=p.x, y=p.y, z=p.z}
+								elseif not ( d_p_node == tnt_c_fire
+										or string.find(node.name, "default:water_")
+										or string.find(node.name, "default:lava_")) then
+									--if math.abs(dx)<tnt_range and math.abs(dy)<tnt_range and math.abs(dz)<tnt_range then
+									destroy(p, player, ents)
+									--elseif pr:next(1,5) <= 4 then
+									--	destroy(p, player, ents)
+									--end
 								end
-								break
 							end
-							-------------------------------------------------------------
-		--					if d_p_node == tnt_c_tnt
-		--							or d_p_node == tnt_c_tnt_burning then
-							if is_tnt(node.name)==true then
-								--nodes[p_node] = tnt_c_tnt
-								minetest.remove_node(p)
-								boom_id(p, 0.5, player, node.name) -- was {x=p.x, y=p.y, z=p.z}
-							elseif not ( d_p_node == tnt_c_fire
-									or string.find(node.name, "default:water_")
-									or string.find(node.name, "default:lava_")) then
-								--if math.abs(dx)<tnt_range and math.abs(dy)<tnt_range and math.abs(dz)<tnt_range then
-								destroy(p, player, ents)
-								--elseif pr:next(1,5) <= 4 then
-								--	destroy(p, player, ents)
-								--end
-							end
+						--------------------------------------------
 						end
-					--------------------------------------------
+						--------------------------------------------
 					end
-					--------------------------------------------
 				end
+				
 			end
 			
-		end
-		
-		for name, val in pairs(ents) do
-        	drop_item(pos, name, player, val)
+			for name, val in pairs(ents) do
+				drop_item(pos, name, player, val)
+			end
 		end
 		
 		minetest.add_particlespawner(
@@ -429,7 +432,7 @@ minetest.register_abm({
         interval = 2,
         chance = 10,
         action = function(pos, node)
-                if node.name == "tnt:tnt1" then
+                if tnt_tables[node.name]~=nil then
                         boom({x=pos.x, y=pos.y, z=pos.z}, 0)
                 else
                         burn(pos)
