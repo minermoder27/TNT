@@ -38,6 +38,8 @@ local tnt_tables = {["bettertnt:tnt1"] = {r=6},
 					["bettertnt:tnt38"] = {r=145},
 					["bettertnt:tnt39"] = {r=150},
 					["bettertnt:tnt40"] = {r=160},
+}
+				
 
 tnt = {}
 tnt.force = {
