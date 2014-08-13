@@ -10,8 +10,7 @@ local tnt_tables = {["bettertnt:tnt1"] = {r=6},
 					["bettertnt:tnt10"] = {r=16},
 					["bettertnt:tnt11"] = {r=18},
 					["bettertnt:tnt12"] = {r=20},
-					["bettertnt:tnt13"] = {r=22},
-					["bettertnt:tnt14"] = {r=25},
+					["bettertnt:tnt13"] = {r=22}, ["bettertnt:tnt14"] = {r=25},
 					["bettertnt:tnt15"] = {r=30},
 					["bettertnt:tnt16"] = {r=35},
 					["bettertnt:tnt17"] = {r=40},
@@ -471,10 +470,24 @@ minetest.register_abm({
         end
 })
 
+minetest.register_abm({
+        nodenames = tnt_plus_gunpowder,
+        neighbors = {"tnt:gunpowder"},
+        interval = 2,
+        chance = 10,
+        action = function(pos, node)
+                if tnt_tables[node.name]~=nil then
+                        boom({x=pos.x, y=pos.y, z=pos.z}, 0)
+                else
+                        burn(pos)
+                end
+        end
+})
+
 minetest.register_craft({
         output = "bettertnt:gunpowder",
         type = "shapeless",
-        recipe = {"default:coal_lump", "default:gravel"}
+        recipe = {"default:coal_lump", "default:gravel", "default:dirt"}
 })
 
 
